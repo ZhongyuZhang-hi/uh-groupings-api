@@ -653,37 +653,39 @@ public class GroupingsRestControllerv2_1 {
     /**
      * True if currentUser is an owner.
      */
-    @GetMapping(value = "/members/{uhIdentifier}/is-owner")
+    @GetMapping("/members/is-owner")
     @ResponseBody
-    public ResponseEntity<Boolean> hasOwnerPrivs(@PathVariable String uhIdentifier) {
+    public ResponseEntity<Boolean> hasOwnerPrivs(@RequestHeader(CURRENT_USER_KEY) String currentUser) {
         logger.info("Entered REST hasOwnerPrivs...");
         return ResponseEntity
                 .ok()
-                .body(memberService.isOwner(uhIdentifier));
+                .body(memberService.isOwner(currentUser));
     }
 
     /**
-     * True if user is an owner of the grouping.
+     * True if currentUser is an owner of the grouping.
      */
-    @GetMapping(value = "/members/{path:[\\w-:.]+}/{uhIdentifier}/is-owner")
+    @GetMapping(value = "/members/{path:[\\w-:.]+}/is-owner")
     @ResponseBody
-    public ResponseEntity<Boolean> hasGroupingOwnerPrivs(@PathVariable String path, @PathVariable String uhIdentifier) {
+    public ResponseEntity<Boolean> hasGroupingOwnerPrivs(
+            @PathVariable String path,
+            @RequestHeader(CURRENT_USER_KEY) String currentUser) {
         logger.info("Entered REST hasGroupingOwnerPrivs...");
         return ResponseEntity
                 .ok()
-                .body(memberService.isOwner(path, uhIdentifier));
+                .body(memberService.isOwner(path, currentUser));
     }
 
     /**
      * True if currentUser is an admin.
      */
-    @GetMapping(value = "/members/{uhIdentifier}/is-admin")
+    @GetMapping(value = "/members/is-admin")
     @ResponseBody
-    public ResponseEntity<Boolean> hasAdminPrivs(@PathVariable String uhIdentifier) {
+    public ResponseEntity<Boolean> hasAdminPrivs(@RequestHeader(CURRENT_USER_KEY) String currentUser) {
         logger.info("Entered REST hasAdminPrivs...");
         return ResponseEntity
                 .ok()
-                .body(memberService.isAdmin(uhIdentifier));
+                .body(memberService.isAdmin(currentUser));
     }
 
     /**
