@@ -91,9 +91,9 @@ public class MemberAttributeService {
     /**
      * Get a list of GroupPaths the user owns, by uid or uhUuid.
      */
-    public GroupingPaths getOwnedGroupings(String currentUser, String uhIdentifier) {
-        logger.info(String.format("getOwnedGroupings; currentUser: %s; uhIdentifier: %s;", currentUser, uhIdentifier));
-        List<String> pathStrings = groupingsService.groupPaths(uhIdentifier, pathHasOwner());
+    public GroupingPaths getOwnedGroupings(String currentUser) {
+        logger.info(String.format("getOwnedGroupings; currentUser: %s;", currentUser));
+        List<String> pathStrings = groupingsService.groupPaths(currentUser, pathHasOwner());
         List<GroupingPath> groupingPaths = new ArrayList<>();
         for (String path : pathStrings) {
             String parentGroupingPath = parentGroupingPath(path);

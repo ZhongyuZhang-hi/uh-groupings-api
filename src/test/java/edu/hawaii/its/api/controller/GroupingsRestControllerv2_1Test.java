@@ -669,9 +669,9 @@ public class GroupingsRestControllerv2_1Test {
         GroupingPaths groupingPaths = new GroupingPaths();
         groupingPaths.addGroupingPath(new GroupingPath(path, description));
 
-        given(memberAttributeService.getOwnedGroupings(admin, uid))
+        given(memberAttributeService.getOwnedGroupings(admin))
                 .willReturn(groupingPaths);
-        mockMvc.perform(get(API_BASE + "/owners/grouping/groupings")
+        mockMvc.perform(get(API_BASE + "/owners/groupings")
                         .header(CURRENT_USER, admin)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
                 .andExpect(jsonPath("$.groupingPaths[0].path").value(path))
@@ -679,7 +679,7 @@ public class GroupingsRestControllerv2_1Test {
                 .andExpect(jsonPath("$.groupingPaths[0].description").value("description"));
 
         verify(memberAttributeService, times(1))
-                .getOwnedGroupings(admin, uid);
+                .getOwnedGroupings(admin);
     }
 
     @Test

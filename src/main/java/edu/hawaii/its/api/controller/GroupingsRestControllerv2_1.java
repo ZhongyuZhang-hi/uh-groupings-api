@@ -487,13 +487,12 @@ public class GroupingsRestControllerv2_1 {
     /**
      * Get an owner's owned groupings by uid or uhUuid.
      */
-    @GetMapping("/owners/{uhIdentifier:[\\w-:.]+}/groupings")
-    public ResponseEntity<GroupingPaths> ownerGroupings(@RequestHeader(CURRENT_USER_KEY) String currentUser,
-                                                             @PathVariable String uhIdentifier) {
+    @GetMapping("/owners/groupings")
+    public ResponseEntity<GroupingPaths> ownerGroupings(@RequestHeader(CURRENT_USER_KEY) String currentUser) {
         logger.info("Entered REST ownerGroupings...");
         return ResponseEntity
                 .ok()
-                .body(memberAttributeService.getOwnedGroupings(currentUser, uhIdentifier));
+                .body(memberAttributeService.getOwnedGroupings(currentUser));
     }
 
     /**
