@@ -690,14 +690,13 @@ public class GroupingsRestControllerv2_1 {
     /**
      * Get the number of groupings that the current user owns
      */
-    @GetMapping(value = "/owners/{uhIdentifier:[\\w-:.]+}/groupings/count")
+    @GetMapping(value = "/owners/groupings/count")
     @ResponseBody
-    public ResponseEntity<Integer> getNumberOfGroupings(@RequestHeader(CURRENT_USER_KEY) String currentUser,
-                                                        @PathVariable String uhIdentifier) {
+    public ResponseEntity<Integer> getNumberOfGroupings(@RequestHeader(CURRENT_USER_KEY) String currentUser) {
         logger.info("Entered REST getNumberOfGroupings...");
         return ResponseEntity
                 .ok()
-                .body(memberAttributeService.numberOfGroupings(currentUser, uhIdentifier));
+                .body(memberAttributeService.numberOfGroupings(currentUser));
     }
 
     /**
