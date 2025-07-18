@@ -212,7 +212,7 @@ public class TestMemberAttributeService {
         String testUid = testUids.get(0);
         List<String> testList = new ArrayList<>();
         testList.add(testUid);
-        Integer numberOfGroupings = memberAttributeService.numberOfGroupings(ADMIN, testUid);
+        Integer numberOfGroupings = memberAttributeService.numberOfGroupings(testUid);
         assertNotNull(numberOfGroupings);
 
         // Should equal the size of the list returned from getOwnedGroupings().
@@ -221,10 +221,10 @@ public class TestMemberAttributeService {
 
         // Should increase by one if user is added as owner to a grouping.
         updateMemberService.addOwnerships(ADMIN, GROUPING, testList);
-        assertEquals(numberOfGroupings + 1, memberAttributeService.numberOfGroupings(ADMIN, testUid));
+        assertEquals(numberOfGroupings + 1, memberAttributeService.numberOfGroupings(testUid));
         updateMemberService.removeOwnerships(ADMIN, GROUPING, testList);
 
         // Should decrease by one if user is added as owner to a grouping.
-        assertEquals(numberOfGroupings, memberAttributeService.numberOfGroupings(ADMIN, testUid));
+        assertEquals(numberOfGroupings, memberAttributeService.numberOfGroupings(testUid));
     }
 }
