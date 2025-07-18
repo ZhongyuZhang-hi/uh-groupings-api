@@ -179,7 +179,7 @@ public class TestMemberAttributeService {
     public void getOwnedGroupingsTest() {
         // Groupings owned by current admin should complement
         // the list of memberships that the current admin is in.
-        GroupingPaths groupingsOwned = memberAttributeService.getOwnedGroupings(ADMIN, ADMIN);
+        GroupingPaths groupingsOwned = memberAttributeService.getOwnedGroupings(ADMIN);
         ManageSubjectResults manageSubjectResults = membershipService.manageSubjectResults(ADMIN, ADMIN);
         assertNotNull(groupingsOwned);
         groupingsOwned.getGroupingPaths().forEach(groupingPath -> {
@@ -193,13 +193,13 @@ public class TestMemberAttributeService {
         List<String> testList = new ArrayList<>();
         String testUid = testUids.get(0);
         testList.add(testUid);
-        groupingsOwned = memberAttributeService.getOwnedGroupings(ADMIN, testUid);
+        groupingsOwned = memberAttributeService.getOwnedGroupings(testUid);
         assertFalse(
                 groupingsOwned.getGroupingPaths().stream()
                         .anyMatch(groupingPath -> groupingPath.getPath().equals(GROUPING)));
 
         updateMemberService.addOwnerships(ADMIN, GROUPING, testList);
-        groupingsOwned = memberAttributeService.getOwnedGroupings(ADMIN, testUid);
+        groupingsOwned = memberAttributeService.getOwnedGroupings(testUid);
         assertTrue(
                 groupingsOwned.getGroupingPaths().stream()
                         .anyMatch(groupingPath -> groupingPath.getPath().equals(GROUPING)));
@@ -216,7 +216,7 @@ public class TestMemberAttributeService {
         assertNotNull(numberOfGroupings);
 
         // Should equal the size of the list returned from getOwnedGroupings().
-        assertEquals(memberAttributeService.getOwnedGroupings(ADMIN, testUid).getGroupingPaths().size(), numberOfGroupings);
+        assertEquals(memberAttributeService.getOwnedGroupings(testUid).getGroupingPaths().size(), numberOfGroupings);
         updateMemberService.addOwnerships(ADMIN, GROUPING, testList);
 
         // Should increase by one if user is added as owner to a grouping.

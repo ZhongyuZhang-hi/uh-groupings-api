@@ -418,12 +418,12 @@ public class GroupingsRestControllerv2_1Test {
         List<String> paths = Arrays.asList("group-path:basis", "group-path:include", "group-path:exclude", "group-path:owners");
         for (SortBy sortBy : sortByOptions) {
             given(groupingOwnerService.paginatedGrouping(CURRENT_USER, paths, 1, 700, sortBy.sortString(), true))
-                .willReturn(groupingGroupsMembers);
+                    .willReturn(groupingGroupsMembers);
             MvcResult result = mockMvc.perform(
-                post(API_BASE + "/groupings/group?page=1&size=700&sortBy=" + sortBy.value() + "&isAscending=true")
-                            .header(CURRENT_USER, CURRENT_USER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtil.asJson(paths)))
+                            post(API_BASE + "/groupings/group?page=1&size=700&sortBy=" + sortBy.value() + "&isAscending=true")
+                                    .header(CURRENT_USER, CURRENT_USER)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(JsonUtil.asJson(paths)))
                     .andExpect(status().isOk())
                     .andReturn();
             assertEquals(JsonUtil.asJson(groupingGroupsMembers), result.getResponse().getContentAsString());
@@ -669,7 +669,7 @@ public class GroupingsRestControllerv2_1Test {
         GroupingPaths groupingPaths = new GroupingPaths();
         groupingPaths.addGroupingPath(new GroupingPath(path, description));
 
-        given(memberAttributeService.getOwnedGroupings(admin, uid))
+        given(memberAttributeService.getOwnedGroupings(uid))
                 .willReturn(groupingPaths);
         mockMvc.perform(get(API_BASE + "/owners/grouping/groupings")
                         .header(CURRENT_USER, admin)).andExpect(status().isOk())
@@ -679,7 +679,7 @@ public class GroupingsRestControllerv2_1Test {
                 .andExpect(jsonPath("$.groupingPaths[0].description").value("description"));
 
         verify(memberAttributeService, times(1))
-                .getOwnedGroupings(admin, uid);
+                .getOwnedGroupings(uid);
     }
 
     @Test
@@ -831,35 +831,30 @@ public class GroupingsRestControllerv2_1Test {
     @Test
     public void hasOwnerPrivsTest() throws Exception {
         given(memberService.isOwner(CURRENT_USER)).willReturn(false);
-
-        MvcResult result = mockMvc.perform(get(API_BASE + "/members/is-owner")
-                        .header("current_user", CURRENT_USER))
+        MvcResult result = mockMvc.perform(get(API_BASE + "/members/" + CURRENT_USER + "/is-owner"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertNotNull(result);
-        verify(memberService, times(1)).isOwner(CURRENT_USER);
+        verify(memberService, times(1))
+                .isOwner(CURRENT_USER);
     }
 
     @Test
     public void hasGroupingOwnerPrivsTest() throws Exception {
         String groupingPath = "grouping-path";
-
         given(memberService.isOwner(groupingPath, CURRENT_USER)).willReturn(false);
-
-        MvcResult result = mockMvc.perform(get(API_BASE + "/members/" + groupingPath + "/is-owner")
-                        .header("current_user", CURRENT_USER))
+        MvcResult result = mockMvc.perform(get(API_BASE + "/members/" + groupingPath + "/" + CURRENT_USER + "/is-owner"))
                 .andExpect(status().isOk())
                 .andReturn();
-
         assertNotNull(result);
-        verify(memberService, times(1)).isOwner(groupingPath, CURRENT_USER);
+        verify(memberService, times(1))
+                .isOwner(groupingPath, CURRENT_USER);
     }
 
     @Test
     public void hasAdminPrivsTest() throws Exception {
         given(memberService.isAdmin(CURRENT_USER)).willReturn(false);
-        MvcResult result = mockMvc.perform(get(API_BASE + "/members/is-admin")
-                .header("current_user", CURRENT_USER))
+        MvcResult result = mockMvc.perform(get(API_BASE + "/members/" + CURRENT_USER + "/is-admin"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertNotNull(result);
