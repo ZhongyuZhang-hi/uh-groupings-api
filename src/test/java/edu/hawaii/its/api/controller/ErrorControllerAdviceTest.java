@@ -134,7 +134,7 @@ public class ErrorControllerAdviceTest {
     public void testMembershipResultsExceptionHandling() throws Exception {
         String uhIdentifier = "1234";
 
-        // When current_user and uhIdentifier are the same, but uhIdentifier is not valid
+        // When uhIdentifier is not valid
         given(membershipService.membershipResults(uhIdentifier)).willThrow(UhIdentifierNotFoundException.class);
 
         MvcResult result = mockMvc.perform(get(API_BASE + "/members/memberships")
