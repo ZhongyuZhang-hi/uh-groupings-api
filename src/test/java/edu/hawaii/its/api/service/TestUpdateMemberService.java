@@ -501,12 +501,7 @@ public class TestUpdateMemberService {
     }
 
 //    @Test
-//    public void addRemovePathOwnershipsTest(){
-//        // Todo integration test for updating grouping owners with path owners
-//    }
-
-//    @Test
-//    public void checkAllMembersAfterAddRemovePathOwnershipsTest(){
+//    public void checkAllMembersAfterAddRemoveOwnerGroupingsTest(){
 //        // Todo integration test for checking the changes of members' group after adding and removing path owners
 //    }
 
