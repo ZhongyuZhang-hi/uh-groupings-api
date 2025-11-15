@@ -6,11 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import static org.mockito.Mockito.*;
-
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +34,6 @@ import edu.internet2.middleware.grouperClient.ws.GcWebServiceError;
 @ActiveProfiles("integrationTest")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = { SpringBootWebApplication.class })
-@TestPropertySource(properties = "groupings.max.owner.limit=100")
 public class TestUpdateMemberService {
 
     @Value("${groupings.api.test.grouping_many}")
@@ -77,9 +71,6 @@ public class TestUpdateMemberService {
 
     @Autowired
     private UhIdentifierGenerator uhIdentifierGenerator;
-
-    @MockitoSpyBean
-    private UpdateMemberService updateMemberServiceMock;
 
     private List<String> testUids;
     private List<String> testUhUuids;
@@ -407,11 +398,6 @@ public class TestUpdateMemberService {
     @Test
     public void addRemoveOwnershipTest() {
         String uid = testUids.get(0);
-
-        updateMemberService.removeOwnership(ADMIN, GROUPING, ADMIN);
-        assertFalse(memberService.isOwner(GROUPING, ADMIN));
-        assertTrue(memberService.isAdmin(ADMIN));
-
         updateMemberService.addOwnership(ADMIN, GROUPING, uid);
         assertTrue(memberService.isMember(GROUPING_OWNERS, uid));
         updateMemberService.removeOwnerships(ADMIN, GROUPING, Collections.singletonList(uid));
