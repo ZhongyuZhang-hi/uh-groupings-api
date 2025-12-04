@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.hawaii.its.api.groupings.GroupingGroupMember;
@@ -145,6 +146,54 @@ public class GroupingAssignmentService {
         GroupingGroupMembers owners = groupingAllOwners(currentUser, groupPath).getOwners();
 
         return owners.getMembers().size();
+    }
+
+    /**
+     * Compare direct owners against owner-groupings to return a list of all duplicate owners with uids.
+     */
+    public GroupingGroupMembers compareOwnerGroupings(String currentUser, String groupPath) {
+        logger.info(String.format("compareOwnerGroupings; currentUser: %s; groupPath: %s;",
+                currentUser, groupPath));
+        if (!memberService.isAdmin(currentUser) && !memberService.isOwner(groupPath, currentUser)) {
+            throw new AccessDeniedException();
+        }
+        GroupingGroupMembers immediateOwners = groupingImmediateOwners(currentUser, groupPath).getOwners();
+        HashSet<String> existingUids = new HashSet<>();
+        HashSet<String> duplicateUids = new HashSet<>();
+        ArrayList<String> ownerGroupings = new ArrayList<>();
+        GroupingGroupMembers duplicateOwners = new GroupingGroupMembers();
+
+        for (GroupingGroupMember owner : immediateOwners.getMembers()) {
+            String uid = owner.getUid();
+            String name = owner.getName();
+            if (owner.getName().contains(":")) {
+                ownerGroupings.add(name);
+                continue;
+            }
+            if (uid == null || uid.isEmpty()) {
+                continue; // skip entries with no usable identifier
+            }
+            existingUids.add(uid);
+        }
+        for (String path : ownerGroupings) {
+            GroupingGroupMembers pathOwners = new GroupingGroupMembers(
+                    grouperService.getMembersResult(currentUser, path));
+            for (GroupingGroupMember owner : pathOwners.getMembers()) {
+                String uid = owner.getUid();
+                if (uid == null || uid.isEmpty()) {
+                    continue; // skip entries with no usable identifier
+                }
+                if (existingUids.contains(uid)) {
+                    if (!duplicateUids.contains(uid)) {
+                        duplicateUids.add(uid);
+                        duplicateOwners.getMembers().add(owner);
+                    }
+                } else {
+                    existingUids.add(uid);
+                }
+            }
+        }
+        return duplicateOwners;
     }
 
     /**

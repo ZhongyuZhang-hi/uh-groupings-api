@@ -743,6 +743,19 @@ public class GroupingsRestControllerv2_1 {
     }
 
     /**
+     * Get all duplicated owners in a grouping.
+     * (Either both a direct owner and indirect owner, or multiple indirect owners via different owner-groupings.)
+     */
+    @GetMapping(value = "/groupings/{path:[\\w-:.]+}/owners/compare")
+    public ResponseEntity<GroupingGroupMembers> compareOwnerGroupings(@RequestHeader(CURRENT_USER_KEY) String currentUser,
+                                                               @PathVariable String path) {
+        logger.info("Entered REST compareOwnerGroupings...");
+        return ResponseEntity
+                .ok()
+                .body(groupingAssignmentService.compareOwnerGroupings(currentUser, path));
+    }
+
+    /**
      * A list of immediate owners listed in a grouping.
      * Owners with "IMMEDIATE" filter.
      */

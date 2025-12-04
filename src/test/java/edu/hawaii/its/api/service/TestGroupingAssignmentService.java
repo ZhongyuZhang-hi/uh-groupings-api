@@ -28,6 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import edu.hawaii.its.api.configuration.SpringBootWebApplication;
 import edu.hawaii.its.api.exception.AccessDeniedException;
+import edu.hawaii.its.api.groupings.GroupingGroupMember;
 import edu.hawaii.its.api.groupings.GroupingGroupMembers;
 import edu.hawaii.its.api.groupings.GroupingOwnerMembers;
 import edu.hawaii.its.api.groupings.GroupingPaths;
@@ -35,6 +36,8 @@ import edu.hawaii.its.api.type.Group;
 import edu.hawaii.its.api.type.GroupType;
 import edu.hawaii.its.api.type.GroupingPath;
 import edu.hawaii.its.api.type.OptType;
+import edu.hawaii.its.api.wrapper.GetMembersResult;
+import edu.hawaii.its.api.wrapper.Subject;
 
 @ActiveProfiles("integrationTest")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -299,6 +302,50 @@ public class TestGroupingAssignmentService {
         updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
         int afterRemove = groupingAssignmentService.numberOfAllOwners(ADMIN, GROUPING);
         assertEquals(initialOwners, afterRemove);
+    }
+
+    @Test
+    public void compareOwnerGroupingsTest() {
+        grouperService.removeMember(ADMIN, GROUPING_OWNERS, testUid);
+        updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
+
+        updateMemberService.addOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
+
+        // Try basis then include, but pick a valid human subject (non-null, non-empty uid, not a group id).
+        String duplicateOwnerUid = "";
+        GetMembersResult membersResult =
+                grouperService.getMembersResult(ADMIN, OWNER_GROUPING + ":basis");
+        List<Subject> subjects = membersResult.getSubjects();
+
+        if (subjects == null || subjects.isEmpty()) {
+            membersResult = grouperService.getMembersResult(ADMIN, OWNER_GROUPING + ":include");
+            subjects = membersResult.getSubjects();
+        }
+
+        for (Subject s : subjects) {
+            String uid = s.getUid();
+            if (uid != null && !uid.isEmpty()) {
+                duplicateOwnerUid = uid;
+                break;
+            }
+        }
+
+        if (duplicateOwnerUid.isEmpty()) {
+            updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
+            fail("No valid members found in OWNER_GROUPING; cannot run test.");
+        }
+
+        // Add the member as a direct owner to create the duplicate (member is already in OWNER_GROUPING).
+        grouperService.addMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUid);
+
+        GroupingGroupMembers duplicates = groupingAssignmentService.compareOwnerGroupings(ADMIN, GROUPING);
+        assertNotNull(duplicates);
+
+        assertEquals(1, duplicates.getMembers().size());
+        assertEquals(duplicateOwnerUid, duplicates.getMembers().get(0).getUid());
+
+        grouperService.removeMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUid);
+        updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
     }
 
     @Test
