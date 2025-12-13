@@ -158,42 +158,91 @@ public class GroupingAssignmentService {
             throw new AccessDeniedException();
         }
         GroupingGroupMembers immediateOwners = groupingImmediateOwners(currentUser, groupPath).getOwners();
-        HashSet<String> existingUids = new HashSet<>();
-        HashSet<String> duplicateUids = new HashSet<>();
+        HashSet<String> existingUhUuids = new HashSet<>();
+        HashSet<String> duplicateUhUuids = new HashSet<>();
         ArrayList<String> ownerGroupings = new ArrayList<>();
         GroupingGroupMembers duplicateOwners = new GroupingGroupMembers();
 
         for (GroupingGroupMember owner : immediateOwners.getMembers()) {
-            String uid = owner.getUid();
+            String uhUuid = owner.getUhUuid();
             String name = owner.getName();
             if (owner.getName().contains(":")) {
                 ownerGroupings.add(name);
                 continue;
             }
-            if (uid == null || uid.isEmpty()) {
+            if (uhUuid == null || uhUuid.isEmpty()) {
                 continue; // skip entries with no usable identifier
             }
-            existingUids.add(uid);
+            existingUhUuids.add(uhUuid);
         }
         for (String path : ownerGroupings) {
             GroupingGroupMembers pathOwners = new GroupingGroupMembers(
                     grouperService.getMembersResult(currentUser, path));
             for (GroupingGroupMember owner : pathOwners.getMembers()) {
-                String uid = owner.getUid();
-                if (uid == null || uid.isEmpty()) {
+                String uhUuid = owner.getUhUuid();
+                String name = owner.getName();
+                if (uhUuid == null || uhUuid.isEmpty()) {
                     continue; // skip entries with no usable identifier
                 }
-                if (existingUids.contains(uid)) {
-                    if (!duplicateUids.contains(uid)) {
-                        duplicateUids.add(uid);
+                if (existingUhUuids.contains(uhUuid)) {
+                    if (!duplicateUhUuids.contains(uhUuid)) {
+                        duplicateUhUuids.add(uhUuid);
                         duplicateOwners.getMembers().add(owner);
                     }
                 } else {
-                    existingUids.add(uid);
+                    existingUhUuids.add(uhUuid);
                 }
             }
         }
         return duplicateOwners;
+    }
+
+    /**
+     * Column3
+     */
+    public Map<String, List<String>> getDuplicateOwnerPaths(
+            String currentUser,
+            String groupPath) {
+
+        GroupingGroupMembers duplicateOwners = compareOwnerGroupings(currentUser, groupPath);
+        HashSet<String> duplicateUuids = new HashSet<>();
+        for (GroupingGroupMember owner : duplicateOwners.getMembers()) {
+            String uhUuid = owner.getUhUuid();
+            if (uhUuid != null && !uhUuid.isEmpty()) {
+                duplicateUuids.add(uhUuid);
+            }
+        }
+
+        ArrayList<String> ownerGroupings = new ArrayList<>();
+        GroupingGroupMembers immediateOwners = groupingImmediateOwners(currentUser, groupPath).getOwners();
+
+        for (GroupingGroupMember owner : immediateOwners.getMembers()) {
+            String name = owner.getName();
+            if (owner.getName().contains(":")) {
+                ownerGroupings.add(name);
+            }
+        }
+
+        Map<String, List<String>> duplicatePaths = new HashMap<>();
+
+        for (String path : ownerGroupings) {
+            GroupingGroupMembers pathOwners =
+                    new GroupingGroupMembers(grouperService.getMembersResult(currentUser, path));
+
+            for (GroupingGroupMember owner : pathOwners.getMembers()) {
+                String uhUuid = owner.getUhUuid();
+
+                if (uhUuid == null || !duplicateUuids.contains(uhUuid)) {
+                    continue;
+                }
+
+                duplicatePaths
+                        .computeIfAbsent(uhUuid, x -> new ArrayList<>())
+                        .add(path);
+            }
+        }
+
+        return duplicatePaths;
     }
 
     /**
