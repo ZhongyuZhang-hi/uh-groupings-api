@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.hawaii.its.api.groupings.GroupingGroupMember;
@@ -149,103 +148,6 @@ public class GroupingAssignmentService {
     }
 
     /**
-     * Compare direct owners against owner-groupings to return a list of all duplicate owners with uids.
-     */
-    public GroupingGroupMembers compareOwnerGroupings(String currentUser, String groupPath) {
-        logger.info(String.format("compareOwnerGroupings; currentUser: %s; groupPath: %s;",
-                currentUser, groupPath));
-        if (!memberService.isAdmin(currentUser) && !memberService.isOwner(groupPath, currentUser)) {
-            throw new AccessDeniedException();
-        }
-        GroupingGroupMembers immediateOwners = groupingImmediateOwners(currentUser, groupPath).getOwners();
-        HashSet<String> existingUhUuids = new HashSet<>();
-        HashSet<String> duplicateUhUuids = new HashSet<>();
-        ArrayList<String> ownerGroupings = new ArrayList<>();
-        GroupingGroupMembers duplicateOwners = new GroupingGroupMembers();
-
-        for (GroupingGroupMember owner : immediateOwners.getMembers()) {
-            String uhUuid = owner.getUhUuid();
-            String name = owner.getName();
-            if (owner.getName().contains(":")) {
-                ownerGroupings.add(name);
-                continue;
-            }
-            if (uhUuid == null || uhUuid.isEmpty()) {
-                continue; // skip entries with no usable identifier
-            }
-            existingUhUuids.add(uhUuid);
-        }
-        for (String path : ownerGroupings) {
-            GroupingGroupMembers pathOwners = new GroupingGroupMembers(
-                    grouperService.getMembersResult(currentUser, path));
-            for (GroupingGroupMember owner : pathOwners.getMembers()) {
-                String uhUuid = owner.getUhUuid();
-                String name = owner.getName();
-                if (uhUuid == null || uhUuid.isEmpty()) {
-                    continue; // skip entries with no usable identifier
-                }
-                if (existingUhUuids.contains(uhUuid)) {
-                    if (!duplicateUhUuids.contains(uhUuid)) {
-                        duplicateUhUuids.add(uhUuid);
-                        duplicateOwners.getMembers().add(owner);
-                    }
-                } else {
-                    existingUhUuids.add(uhUuid);
-                }
-            }
-        }
-        return duplicateOwners;
-    }
-
-    /**
-     * Column3
-     */
-    public Map<String, List<String>> getDuplicateOwnerPaths(
-            String currentUser,
-            String groupPath) {
-
-        GroupingGroupMembers duplicateOwners = compareOwnerGroupings(currentUser, groupPath);
-        HashSet<String> duplicateUuids = new HashSet<>();
-        for (GroupingGroupMember owner : duplicateOwners.getMembers()) {
-            String uhUuid = owner.getUhUuid();
-            if (uhUuid != null && !uhUuid.isEmpty()) {
-                duplicateUuids.add(uhUuid);
-            }
-        }
-
-        ArrayList<String> ownerGroupings = new ArrayList<>();
-        GroupingGroupMembers immediateOwners = groupingImmediateOwners(currentUser, groupPath).getOwners();
-
-        for (GroupingGroupMember owner : immediateOwners.getMembers()) {
-            String name = owner.getName();
-            if (owner.getName().contains(":")) {
-                ownerGroupings.add(name);
-            }
-        }
-
-        Map<String, List<String>> duplicatePaths = new HashMap<>();
-
-        for (String path : ownerGroupings) {
-            GroupingGroupMembers pathOwners =
-                    new GroupingGroupMembers(grouperService.getMembersResult(currentUser, path));
-
-            for (GroupingGroupMember owner : pathOwners.getMembers()) {
-                String uhUuid = owner.getUhUuid();
-
-                if (uhUuid == null || !duplicateUuids.contains(uhUuid)) {
-                    continue;
-                }
-
-                duplicatePaths
-                        .computeIfAbsent(uhUuid, x -> new ArrayList<>())
-                        .add(path);
-            }
-        }
-
-        return duplicatePaths;
-    }
-
-    /**
      * Get number of direct owners in a grouping.
      */
     public Integer numberOfDirectOwners(String currentUser, String groupingPath) {
@@ -263,6 +165,66 @@ public class GroupingAssignmentService {
                 directOwnerCount++;
         }
         return directOwnerCount;
+    }
+
+    /**
+     * Compare direct owners and owner-groupings
+     * Returns a Map of all owners with multiple ownerships and sources of ownership for those owners.
+     * Map Structure: Map<String, Map<String, List<String>>>
+     *      Outer Key (String): UH UUID of the owner
+     *      Inner Map<String, List<String>> contains 3 key, value pairs:
+     *          "name"  -> List<String>: Index 0 contains the owner's name
+     *          "uid"   -> List<String>: Index 0 contains the owner's uid
+     *          "paths" -> List<String>: Contains sources of ownership.
+     */
+    public Map<String, Map<String, List<String>>> compareOwnerGroupings(String currentUser, String groupPath) {
+        logger.info(String.format("compareOwnerGroupings; currentUser: %s; groupPath: %s;",
+                currentUser, groupPath));
+        if (!memberService.isAdmin(currentUser) && !memberService.isOwner(groupPath, currentUser)) {
+            throw new AccessDeniedException();
+        }
+        GroupingGroupMembers immediateOwners = groupingImmediateOwners(currentUser, groupPath).getOwners();
+        Map<String, Map<String, List<String>>> existingUhUuids = new HashMap<>();
+        Map<String, Map<String, List<String>>> duplicates = new HashMap<>();
+        ArrayList<String> ownerGroupings = new ArrayList<>();
+
+        //iterate through immediate owners to log direct owners and owner-groupings
+        for (GroupingGroupMember owner : immediateOwners.getMembers()) {
+            String uhUuid = owner.getUhUuid();
+            String name = owner.getName();
+            if (owner.getName().contains(":")) {
+                ownerGroupings.add(name);
+                continue;
+            }
+            existingUhUuids.put(uhUuid, new HashMap<>());
+            existingUhUuids.get(uhUuid).put("name", new ArrayList<>(List.of(owner.getName())));
+            existingUhUuids.get(uhUuid).put("uid", new ArrayList<>(List.of(owner.getUid())));
+            existingUhUuids.get(uhUuid).put("paths", new ArrayList<>(List.of("DIRECT")));
+        }
+
+        //iterate through each owner-grouping to find duplicate owners
+        for (String path : ownerGroupings) {
+            GroupingGroupMembers pathOwners = new GroupingGroupMembers(
+                    grouperService.getMembersResult(currentUser, path));
+            for (GroupingGroupMember owner : pathOwners.getMembers()) {
+                String uhUuid = owner.getUhUuid();
+                //copy and place it in duplicate map if already exists in existing map
+                if (existingUhUuids.containsKey(uhUuid)) {
+                    if (!duplicates.containsKey(uhUuid)) {
+                        duplicates.put(uhUuid, existingUhUuids.get(uhUuid));
+                    }
+                    //add the owner-grouping path to the list of sources
+                    duplicates.get(uhUuid).get("paths").add(path);
+                } else {
+                    //place it in existing map if seen first time
+                    existingUhUuids.put(uhUuid, new HashMap<>());
+                    existingUhUuids.get(uhUuid).put("name", new ArrayList<>(List.of(owner.getName())));
+                    existingUhUuids.get(uhUuid).put("uid", new ArrayList<>(List.of(owner.getUid())));
+                    existingUhUuids.get(uhUuid).put("paths", new ArrayList<>(List.of(path)));
+                }
+            }
+        }
+        return duplicates;
     }
 
     /**
