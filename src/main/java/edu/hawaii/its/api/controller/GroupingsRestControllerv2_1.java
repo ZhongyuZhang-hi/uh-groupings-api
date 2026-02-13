@@ -43,6 +43,7 @@ import edu.hawaii.its.api.groupings.GroupingUpdateSyncDestResult;
 import edu.hawaii.its.api.groupings.ManageSubjectResults;
 import edu.hawaii.its.api.groupings.MemberAttributeResults;
 import edu.hawaii.its.api.groupings.MembershipResults;
+import edu.hawaii.its.api.groupings.OwnerResult;
 import edu.hawaii.its.api.service.AnnouncementsService;
 import edu.hawaii.its.api.service.AsyncJobsManager;
 import edu.hawaii.its.api.service.GroupingAssignmentService;
@@ -743,11 +744,11 @@ public class GroupingsRestControllerv2_1 {
     }
 
     /**
-     * Returns all duplicated owners in a grouping with their sources of ownership.
+     * Get all duplicated owners in a grouping, and their sources of ownership.
      * (Either both a direct owner and indirect owner, or multiple indirect owners via different owner-groupings.)
      */
     @GetMapping(value = "/groupings/{path:[\\w-:.]+}/owners/compare")
-    public ResponseEntity<Map<String, Map<String, List<String>>>> compareOwnerGroupings(@PathVariable String path) {
+    public ResponseEntity<Map<String, OwnerResult>> compareOwnerGroupings(@PathVariable String path) {
         logger.info("Entered REST compareOwnerGroupings...");
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 

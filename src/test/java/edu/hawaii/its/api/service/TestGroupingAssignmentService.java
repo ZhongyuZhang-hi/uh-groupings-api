@@ -31,6 +31,7 @@ import edu.hawaii.its.api.exception.AccessDeniedException;
 import edu.hawaii.its.api.groupings.GroupingGroupMembers;
 import edu.hawaii.its.api.groupings.GroupingOwnerMembers;
 import edu.hawaii.its.api.groupings.GroupingPaths;
+import edu.hawaii.its.api.groupings.OwnerResult;
 import edu.hawaii.its.api.type.Group;
 import edu.hawaii.its.api.type.GroupType;
 import edu.hawaii.its.api.type.GroupingPath;
@@ -346,12 +347,14 @@ public class TestGroupingAssignmentService {
         // Add the member as a direct owner to create the duplicate (member is already in OWNER_GROUPING).
         grouperService.addMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUhUuid);
 
-        Map<String, Map<String, List<String>>> duplicates =
+        Map<String, OwnerResult> duplicates =
                 groupingAssignmentService.compareOwnerGroupings(ADMIN, GROUPING);
         grouperService.removeMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUhUuid);
         updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
         assertEquals(initialDuplicatesCount + 1, duplicates.size());
         assertTrue(duplicates.containsKey(duplicateOwnerUhUuid));
-        assertTrue(duplicates.get(duplicateOwnerUhUuid).get("paths").contains(OWNER_GROUPING));
+        assertEquals(duplicates.get(duplicateOwnerUhUuid).getUhUuid(), duplicateOwnerUhUuid);
+        assertTrue(duplicates.get(duplicateOwnerUhUuid).getPaths().contains("DIRECT"));
+        assertTrue(duplicates.get(duplicateOwnerUhUuid).getPaths().contains(OWNER_GROUPING));
     }
 }
