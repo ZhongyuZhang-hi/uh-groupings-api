@@ -27,10 +27,7 @@ import edu.hawaii.its.api.exception.AccessDeniedException;
 import edu.hawaii.its.api.exception.DirectOwnerRemovedException;
 import edu.hawaii.its.api.exception.OwnerLimitExceededException;
 import edu.hawaii.its.api.exception.UhIdentifierNotFoundException;
-import edu.hawaii.its.api.groupings.GroupingGroupMember;
-import edu.hawaii.its.api.groupings.GroupingGroupMembers;
 import edu.hawaii.its.api.groupings.GroupingMembers;
-import edu.hawaii.its.api.groupings.GroupingOwnerMembers;
 import edu.hawaii.its.api.groupings.GroupingReplaceGroupMembersResult;
 import edu.hawaii.its.api.type.OptType;
 import edu.internet2.middleware.grouperClient.ws.GcWebServiceError;
@@ -54,6 +51,9 @@ public class TestUpdateMemberService {
 
     @Value("${groupings.api.grouping_admins}")
     private String GROUPING_ADMINS;
+
+    @Value("${groupings.api.test.owner_grouping}")
+    private String OWNER_GROUPING;
 
     @Value("${groupings.api.test.admin_user}")
     private String ADMIN;
@@ -294,7 +294,7 @@ public class TestUpdateMemberService {
         assertFalse(memberService.isMember(GROUPING_INCLUDE, num));
         assertTrue(memberService.isMember(GROUPING_EXCLUDE, num));
 
-        //opt out same Uuid again, nothing should change
+        //opt out same uhUuid again, nothing should change
         updateMemberService.optOut(ADMIN, GROUPING, num);
         assertFalse(memberService.isMember(GROUPING_INCLUDE, num));
         assertTrue(memberService.isMember(GROUPING_EXCLUDE, num));
@@ -502,18 +502,17 @@ public class TestUpdateMemberService {
     @Test
     public void addRemoveOwnerGroupingsTest() {
         List<String> ownerGroupingsToAdd = new ArrayList<>();
-        List<String> ownerGroupingsToAddExceed = new ArrayList<>();
-
-        ownerGroupingsToAdd.add(String.format("tmp:%s:%s-aux", ADMIN, ADMIN));
-        ownerGroupingsToAddExceed.add(String.format("tmp:%s:%s-many", ADMIN, ADMIN));
+        ownerGroupingsToAdd.add(OWNER_GROUPING);
+        List<String> ownerGroupingsExceedingLimit = new ArrayList<>();
+        ownerGroupingsExceedingLimit.add(GROUPING);
 
         updateMemberService.addOwnerGroupingOwnerships(ADMIN, GROUPING, ownerGroupingsToAdd);
-        assertTrue(memberService.isMember(GROUPING_OWNERS, ownerGroupingsToAdd.get(0)));
+        assertTrue(memberService.isMember(GROUPING_OWNERS, OWNER_GROUPING));
         updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, ownerGroupingsToAdd);
-        assertFalse(memberService.isMember(GROUPING_OWNERS, ownerGroupingsToAdd.get(0)));
+        assertFalse(memberService.isMember(GROUPING_OWNERS, OWNER_GROUPING));
 
         try {
-            updateMemberService.addOwnerGroupingOwnerships(ADMIN, GROUPING, ownerGroupingsToAddExceed);
+            updateMemberService.addOwnerGroupingOwnerships(ADMIN, GROUPING, ownerGroupingsExceedingLimit);
             fail("Should throw an exception if adding owner-groupings would exceed the owner limit");
         } catch (OwnerLimitExceededException e) {
             assertNull(e.getCause());
