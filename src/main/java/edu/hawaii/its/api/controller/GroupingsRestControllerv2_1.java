@@ -1,6 +1,7 @@
 package edu.hawaii.its.api.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
 
@@ -42,12 +43,12 @@ import edu.hawaii.its.api.groupings.GroupingUpdateSyncDestResult;
 import edu.hawaii.its.api.groupings.ManageSubjectResults;
 import edu.hawaii.its.api.groupings.MemberAttributeResults;
 import edu.hawaii.its.api.groupings.MembershipResults;
+import edu.hawaii.its.api.groupings.OwnerResult;
 import edu.hawaii.its.api.service.AnnouncementsService;
 import edu.hawaii.its.api.service.AsyncJobsManager;
 import edu.hawaii.its.api.service.GroupingAssignmentService;
 import edu.hawaii.its.api.service.GroupingAttributeService;
 import edu.hawaii.its.api.service.GroupingOwnerService;
-import edu.hawaii.its.api.service.GroupingsService;
 import edu.hawaii.its.api.service.MemberAttributeService;
 import edu.hawaii.its.api.service.MemberService;
 import edu.hawaii.its.api.service.MembershipService;
@@ -740,6 +741,20 @@ public class GroupingsRestControllerv2_1 {
         return ResponseEntity
                 .ok()
                 .body(groupingAssignmentService.numberOfAllOwners(currentUser, path));
+    }
+
+    /**
+     * Get all duplicated owners in a grouping, and their sources of ownership.
+     * (Either both a direct owner and indirect owner, or multiple indirect owners via different owner-groupings.)
+     */
+    @GetMapping(value = "/groupings/{path:[\\w-:.]+}/owners/compare")
+    public ResponseEntity<Map<String, OwnerResult>> compareOwnerGroupings(@PathVariable String path) {
+        logger.info("Entered REST compareOwnerGroupings...");
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return ResponseEntity
+                .ok()
+                .body(groupingAssignmentService.compareOwnerGroupings(currentUser, path));
     }
 
     /**

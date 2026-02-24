@@ -50,6 +50,7 @@ import edu.hawaii.its.api.groupings.GroupingUpdateSyncDestResult;
 import edu.hawaii.its.api.groupings.ManageSubjectResults;
 import edu.hawaii.its.api.groupings.MemberAttributeResults;
 import edu.hawaii.its.api.groupings.MembershipResults;
+import edu.hawaii.its.api.groupings.OwnerResult;
 import edu.hawaii.its.api.service.GroupingAttributeService;
 import edu.hawaii.its.api.service.GroupingsService;
 import edu.hawaii.its.api.service.MemberService;
@@ -833,6 +834,16 @@ public class TestGroupingsRestControllerv2_1 {
                         )
                 .andExpect(status().isOk()).andReturn();
         assertNotNull(objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), Integer.class));
+    }
+
+    @Test
+    @WithMockUhAdmin
+    public void compareOwnerGroupingsTest() throws Exception {
+        String url = API_BASE_URL + "/groupings/" + GROUPING + "/owners/compare";
+        MvcResult mvcResult = mockMvc.perform(get(url)
+                        )
+                .andExpect(status().isOk()).andReturn();
+        assertNotNull(objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Map.class));
     }
 
     @Test
