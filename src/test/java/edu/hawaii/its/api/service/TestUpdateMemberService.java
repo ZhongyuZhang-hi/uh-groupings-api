@@ -1,5 +1,6 @@
 package edu.hawaii.its.api.service;
 
+import static edu.hawaii.its.api.service.PathFilter.logger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -85,6 +86,7 @@ public class TestUpdateMemberService {
 
     @BeforeAll
     public void init() {
+        logger.info("METHOD: Init TestUpdateMemberService");
         GroupingMembers testGroupingMembers = uhIdentifierGenerator.getRandomMembers(5);
         testUids = testGroupingMembers.getUids();
         testUhUuids = testGroupingMembers.getUhUuids();
@@ -102,6 +104,7 @@ public class TestUpdateMemberService {
 
     @Test
     public void addRemoveAdminTest() {
+        logger.info("METHOD: addRemoveAdminTest TestUpdateMemberService");
         // With uh number.
         assertFalse(memberService.isAdmin(testUhUuids.get(0)));
         updateMemberService.addAdminMember(ADMIN, testUhUuids.get(0));
@@ -133,6 +136,7 @@ public class TestUpdateMemberService {
 
     @Test
     public void checkIfAdminUserTest() {
+        logger.info("METHOD: checkIfAdminUserTest TestUpdateMemberService");
         try {
             updateMemberService.checkIfAdminUser(testUhUuids.get(0));
             fail("Should throw an exception if identifier is not an admin.");
@@ -155,6 +159,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void uidAddRemoveIncludeExcludeMembersTest() {
+        logger.info("METHOD: uidAddRemoveIncludeExcludeMembersTest TestUpdateMemberService");
+
         for (String uid : testUids) {
             assertFalse(memberService.isMember(GROUPING_INCLUDE, uid));
             assertFalse(memberService.isMember(GROUPING_EXCLUDE, uid));
@@ -202,6 +208,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void uidAddRemoveIncludeExcludeMembersAsyncTest() {
+        logger.info("METHOD: uidAddRemoveIncludeExcludeMembersAsyncTest TestUpdateMemberService");
+
         for (String uid : testUids) {
             assertFalse(memberService.isMember(GROUPING_INCLUDE, uid));
             assertFalse(memberService.isMember(GROUPING_EXCLUDE, uid));
@@ -249,6 +257,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void uidAddRemoveIncludeExcludeMemberTest() {
+        logger.info("METHOD: uidAddRemoveIncludeExcludeMemberTest TestUpdateMemberService");
+
         String uid = testUids.get(0);
         assertFalse(memberService.isMember(GROUPING_INCLUDE, uid));
         assertFalse(memberService.isMember(GROUPING_EXCLUDE, uid));
@@ -283,6 +293,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void optTest() {
+        logger.info("METHOD: optTest TestUpdateMemberService");
+
         String num = testUhUuids.get(0);
         assertFalse(memberService.isMember(GROUPING_INCLUDE, num));
 
@@ -308,6 +320,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void removeFromGroupsTest() {
+        logger.info("METHOD: removeFromGroupsTest TestUpdateMemberService");
+
         String uhNum = testUhUuids.get(0);
 
         updateMemberService.addOwnership(ADMIN, GROUPING, uhNum);
@@ -335,6 +349,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void resetGroupTest() {
+        logger.info("METHOD: resetGroupTest TestUpdateMemberService");
+
         List<String> includes = testUids.subList(0, 2);
         List<String> excludes = testUids.subList(3, 5);
         updateMemberService.addIncludeMembers(ADMIN, GROUPING, includes);
@@ -355,6 +371,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void resetGroupAsyncTest() {
+        logger.info("METHOD: resetGroupAsyncTest TestUpdateMemberService");
+
         List<String> includes = testUids.subList(0, 2);
         List<String> excludes = testUids.subList(3, 5);
         updateMemberService.addIncludeMembers(ADMIN, GROUPING, includes);
@@ -377,6 +395,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void addRemoveOwnershipsTest() {
+        logger.info("METHOD: addRemoveOwnershipsTest TestUpdateMemberService");
+
         updateMemberService.addOwnerships(ADMIN, GROUPING, testUids);
         for (String uid : testUids) {
             assertTrue(memberService.isMember(GROUPING_OWNERS, uid));
@@ -390,6 +410,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void addRemoveOwnershipsExceptionsTest() {
+        logger.info("METHOD: addRemoveOwnershipsExceptionsTest TestUpdateMemberService");
+
         Integer originalLimit = (Integer) ReflectionTestUtils.getField(updateMemberService, "OWNERS_LIMIT");
         ReflectionTestUtils.setField(updateMemberService, "OWNERS_LIMIT", 4);
         try {
@@ -417,6 +439,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void addRemoveOwnershipTest() {
+        logger.info("METHOD: addRemoveOwnershipTest TestUpdateMemberService");
+
         String uid = testUids.get(0);
         updateMemberService.addOwnership(ADMIN, GROUPING, uid);
         assertTrue(memberService.isMember(GROUPING_OWNERS, uid));
@@ -429,6 +453,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void checkIfOwnerOrAdminUserTest() {
+        logger.info("METHOD: checkIfOwnerOrAdminUserTest TestUpdateMemberService");
+
         // Should not throw an exception if current user is an admin and an owner.
         try {
             updateMemberService.checkIfOwnerOrAdminUser(ADMIN, GROUPING);
@@ -472,6 +498,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void checkIfSelfOptOrAdminTest() {
+        logger.info("METHOD: checkIfSelfOptOrAdminTest TestUpdateMemberService");
+
         try {
             updateMemberService.checkIfSelfOptOrAdmin(testUhUuids.get(0), testUhUuids.get(1));
             fail("Should throw an exception if currentUser is not admin and currentUser is not self opting.");
@@ -501,6 +529,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void addRemoveOwnerGroupingsTest() {
+        logger.info("METHOD: addRemoveOwnerGroupingsTest TestUpdateMemberService");
+
         List<String> ownerGroupingsToAdd = new ArrayList<>();
         ownerGroupingsToAdd.add(OWNER_GROUPING);
         List<String> ownerGroupingsExceedingLimit = new ArrayList<>();
@@ -526,6 +556,8 @@ public class TestUpdateMemberService {
 
     @Test
     public void validateOptInActionForAlreadyOptedUser() {
+        logger.info("METHOD: validateOptInActionForAlreadyOptedUser TestUpdateMemberService");
+
         String testUid = testUhUuids.get(0);
         updateMemberService.addAdminMember(ADMIN, testUid);
         updateMemberService.addOwnerships(ADMIN, GROUPING, testUids);
@@ -549,10 +581,14 @@ public class TestUpdateMemberService {
     }
 
     private void addGroupMember(String groupPath, String uhIdentifier) {
+        logger.info("METHOD: addGroupMember TestUpdateMemberService");
+
         grouperService.addMember(ADMIN, groupPath, uhIdentifier);
     }
 
     private void removeGroupMember(String groupPath, String uhIdentifier) {
+        logger.info("METHOD: removeGroupMember TestUpdateMemberService");
+
         grouperService.removeMember(ADMIN, groupPath, uhIdentifier);
     }
 }

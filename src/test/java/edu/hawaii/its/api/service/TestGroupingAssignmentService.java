@@ -105,7 +105,6 @@ public class TestGroupingAssignmentService {
         grouperService.removeMember(ADMIN, GROUPING_INCLUDE, testUid);
         grouperService.removeMember(ADMIN, GROUPING_EXCLUDE, testUid);
         grouperService.removeMember(ADMIN, GROUPING_OWNERS, testUid);
-
     }
 
     @Test
@@ -298,7 +297,7 @@ public class TestGroupingAssignmentService {
 
         //Owner-Grouping
         updateMemberService.addOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
-        int duplicateOwners = groupingAssignmentService.compareOwnerGroupings(ADMIN, GROUPING).size();
+        int duplicateOwners = groupingAssignmentService.getDuplicateOwnerResults(ADMIN, GROUPING).size();
         int afterAdd = groupingAssignmentService.numberOfAllOwners(ADMIN, GROUPING);
         assertEquals(initialOwners + basisMembers + includeMembers + 1 - duplicateOwners, afterAdd);
         updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
@@ -325,7 +324,7 @@ public class TestGroupingAssignmentService {
     }
 
     @Test
-    public void compareOwnerGroupingsTest() {
+    public void getDuplicateOwnerResultsTest() {
         grouperService.removeMember(ADMIN, GROUPING_OWNERS, testUid);
         updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
 
@@ -342,13 +341,13 @@ public class TestGroupingAssignmentService {
         grouperService.removeMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUhUuid);
 
         updateMemberService.addOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
-        int initialDuplicatesCount = groupingAssignmentService.compareOwnerGroupings(ADMIN, GROUPING).size();
+        int initialDuplicatesCount = groupingAssignmentService.getDuplicateOwnerResults(ADMIN, GROUPING).size();
 
         // Add the member as a direct owner to create the duplicate (member is already in OWNER_GROUPING).
         grouperService.addMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUhUuid);
 
         Map<String, OwnerResult> duplicates =
-                groupingAssignmentService.compareOwnerGroupings(ADMIN, GROUPING);
+                groupingAssignmentService.getDuplicateOwnerResults(ADMIN, GROUPING);
         grouperService.removeMember(ADMIN, GROUPING_OWNERS, duplicateOwnerUhUuid);
         updateMemberService.removeOwnerGroupingOwnerships(ADMIN, GROUPING, List.of(OWNER_GROUPING));
         assertEquals(initialDuplicatesCount + 1, duplicates.size());
