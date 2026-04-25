@@ -92,8 +92,6 @@ public class SubjectService {
     }
 
     private boolean isWellFormedIdentifier(String uhIdentifier) {
-        logger.info("ZHONGDEBUG Regex: " + IDENTIFIER_REGEX);
-        logger.info("ZHONGDEBUG Identifier: " + uhIdentifier);
 
         if (uhIdentifier == null || uhIdentifier.isEmpty()) {
             return false;

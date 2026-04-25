@@ -2,8 +2,11 @@ package edu.hawaii.its.api.service;
 
 import java.util.regex.Pattern;
 
+<<<<<<< HEAD
 import jakarta.annotation.PostConstruct;
 
+=======
+>>>>>>> 75ad7f6b0fc8b27c2864254a9c57474fc96656a8
 import edu.hawaii.its.api.exception.GrouperException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +63,11 @@ public class GroupingAttributeService {
     private final UpdateTimestampService timestampService;
 
     @Value("${groupings.api.validation.description.maxlength}")
+<<<<<<< HEAD
     private int DESCRIPTION_MAX_LENGTH;
+=======
+    private int DESCIPTION_MAX_LENGTH;
+>>>>>>> 75ad7f6b0fc8b27c2864254a9c57474fc96656a8
 
     @Value("${groupings.api.validation.description.regex}")
     private String DESCRIPTION_REGEX;
@@ -156,6 +163,7 @@ public class GroupingAttributeService {
                 ownerUid)) {
             throw new AccessDeniedException();
         }
+<<<<<<< HEAD
         try {
             String sanitizedDescription = validateAndSanitizeDescription(description);
             return groupingsService.updateGroupingDescription(groupPath, sanitizedDescription);
@@ -163,15 +171,28 @@ public class GroupingAttributeService {
             logger.warn(String.format("Malformed description rejected from user: %s;", ownerUid));
             throw e;
         }
+=======
+        String santized_description = validateAndSanitizeDescription(description);
+        return groupingsService.updateGroupingDescription(groupPath, santized_description);
+>>>>>>> 75ad7f6b0fc8b27c2864254a9c57474fc96656a8
     }
 
     public String validateAndSanitizeDescription(String description) {
         if (description == null || description.isEmpty()) {
             throw new InvalidDescriptionException("Description cannot be null or empty.");
         }
+<<<<<<< HEAD
         if (description.length() > DESCRIPTION_MAX_LENGTH) {
             throw new InvalidDescriptionException("Description length is too long.");
         }
+=======
+        if (description.length() > DESCIPTION_MAX_LENGTH) {
+            throw new InvalidDescriptionException("Description length is too long.");
+        }
+        if (DESCRIPTION_PATTERN == null) {
+            DESCRIPTION_PATTERN = Pattern.compile(DESCRIPTION_REGEX);
+        }
+>>>>>>> 75ad7f6b0fc8b27c2864254a9c57474fc96656a8
         if (!DESCRIPTION_PATTERN.matcher(description).matches()) {
             throw new InvalidDescriptionException("Description contains invalid characters.");
         }
